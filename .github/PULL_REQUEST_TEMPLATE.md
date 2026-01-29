@@ -1,17 +1,17 @@
-## Description
-<!-- Brief description of changes -->
+## 説明
+<!-- 変更内容の簡単な説明 -->
 
-## Type of Change
-- [ ] `fix:` Bug fix
-- [ ] `feat:` New feature
-- [ ] `refactor:` Code refactoring
-- [ ] `docs:` Documentation
-- [ ] `test:` Tests
-- [ ] `chore:` Maintenance/tooling
-- [ ] `ci:` CI/CD changes
+## 変更の種類
+- [ ] `fix:` バグ修正
+- [ ] `feat:` 新機能
+- [ ] `refactor:` コードリファクタリング
+- [ ] `docs:` ドキュメント
+- [ ] `test:` テスト
+- [ ] `chore:` メンテナンス/ツール
+- [ ] `ci:` CI/CD の変更
 
-## Checklist
-- [ ] Tests pass locally (`node tests/run-all.js`)
-- [ ] Validation scripts pass
-- [ ] Follows conventional commits format
-- [ ] Updated relevant documentation
+## チェックリスト
+- [ ] ローカルでテストが通過する（`node tests/run-all.js`）
+- [ ] バリデーションスクリプトが通過する
+- [ ] Conventional Commits 形式に従っている
+- [ ] 関連するドキュメントを更新した

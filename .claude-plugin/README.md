@@ -1,5 +1,5 @@
-### Plugin Manifest Gotchas
+### プラグインマニフェストの注意点
 
-If you plan to edit `.claude-plugin/plugin.json`, be aware that the Claude plugin validator enforces several **undocumented but strict constraints** that can cause installs to fail with vague errors (for example, `agents: Invalid input`). In particular, component fields must be arrays, `agents` must use explicit file paths rather than directories, and a `version` field is required for reliable validation and installation.
+`.claude-plugin/plugin.json` を編集する予定がある場合、Claude プラグインバリデーターが**文書化されていないが厳格な制約**を多数適用することに注意してください。これらの制約により、曖昧なエラー（例: `agents: Invalid input`）でインストールが失敗することがあります。特に、コンポーネントフィールドは配列でなければならず、`agents` はディレクトリではなく明示的なファイルパスを使用する必要があり、信頼性の高いバリデーションとインストールには `version` フィールドが必須です。
 
-These constraints are not obvious from public examples and have caused repeated installation failures in the past. They are documented in detail in `.claude-plugin/PLUGIN_SCHEMA_NOTES.md`, which should be reviewed before making any changes to the plugin manifest.
+これらの制約は公開されている例からは明らかではなく、過去に繰り返しインストール失敗の原因となってきました。詳細は `.claude-plugin/PLUGIN_SCHEMA_NOTES.md` にドキュメント化されており、プラグインマニフェストに変更を加える前に確認してください。

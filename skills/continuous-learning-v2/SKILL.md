@@ -4,24 +4,24 @@ description: Instinct-based learning system that observes sessions via hooks, cr
 version: 2.0.0
 ---
 
-# Continuous Learning v2 - Instinct-Based Architecture
+# Continuous Learning v2 - 本能ベースアーキテクチャ
 
-An advanced learning system that turns your Claude Code sessions into reusable knowledge through atomic "instincts" - small learned behaviors with confidence scoring.
+Claude Code セッションを、原子的な「本能」- 信頼度スコアリングを持つ小さな学習済み行動 - を通じて再利用可能な知識に変換する高度な学習システムです。
 
-## What's New in v2
+## v2 の新機能
 
-| Feature | v1 | v2 |
+| 機能 | v1 | v2 |
 |---------|----|----|
-| Observation | Stop hook (session end) | PreToolUse/PostToolUse (100% reliable) |
-| Analysis | Main context | Background agent (Haiku) |
-| Granularity | Full skills | Atomic "instincts" |
-| Confidence | None | 0.3-0.9 weighted |
-| Evolution | Direct to skill | Instincts → cluster → skill/command/agent |
-| Sharing | None | Export/import instincts |
+| 観察 | Stop hook（セッション終了時） | PreToolUse/PostToolUse（100%信頼性） |
+| 分析 | メインコンテキスト | バックグラウンドエージェント（Haiku） |
+| 粒度 | 完全なスキル | 原子的な「本能」 |
+| 信頼度 | なし | 0.3〜0.9 重み付け |
+| 進化 | スキルへ直接 | 本能 → クラスタ → スキル/コマンド/エージェント |
+| 共有 | なし | 本能のエクスポート/インポート |
 
-## The Instinct Model
+## 本能モデル
 
-An instinct is a small learned behavior:
+本能は小さな学習済み行動です:
 
 ```yaml
 ---
@@ -42,34 +42,34 @@ Use functional patterns over classes when appropriate.
 - User corrected class-based approach to functional on 2025-01-15
 ```
 
-**Properties:**
-- **Atomic** — one trigger, one action
-- **Confidence-weighted** — 0.3 = tentative, 0.9 = near certain
-- **Domain-tagged** — code-style, testing, git, debugging, workflow, etc.
-- **Evidence-backed** — tracks what observations created it
+**プロパティ:**
+- **原子的** - 1つのトリガー、1つのアクション
+- **信頼度重み付け** - 0.3 = 暫定的、0.9 = ほぼ確実
+- **ドメインタグ付け** - code-style、testing、git、debugging、workflow など
+- **エビデンス裏付け** - 作成の元となった観察を追跡
 
-## How It Works
+## 仕組み
 
 ```
-Session Activity
+セッションアクティビティ
       │
-      │ Hooks capture prompts + tool use (100% reliable)
+      │ Hooks がプロンプト + ツール使用をキャプチャ（100%信頼性）
       ▼
 ┌─────────────────────────────────────────┐
 │         observations.jsonl              │
-│   (prompts, tool calls, outcomes)       │
+│   （プロンプト、ツール呼び出し、結果）    │
 └─────────────────────────────────────────┘
       │
-      │ Observer agent reads (background, Haiku)
+      │ Observer エージェントが読み取り（バックグラウンド、Haiku）
       ▼
 ┌─────────────────────────────────────────┐
-│          PATTERN DETECTION              │
-│   • User corrections → instinct         │
-│   • Error resolutions → instinct        │
-│   • Repeated workflows → instinct       │
+│          パターン検出                    │
+│   • ユーザー修正 → 本能                  │
+│   • エラー解決 → 本能                    │
+│   • 繰り返しワークフロー → 本能          │
 └─────────────────────────────────────────┘
       │
-      │ Creates/updates
+      │ 作成/更新
       ▼
 ┌─────────────────────────────────────────┐
 │         instincts/personal/             │
@@ -78,7 +78,7 @@ Session Activity
 │   • use-zod-validation.md (0.6)         │
 └─────────────────────────────────────────┘
       │
-      │ /evolve clusters
+      │ /evolve がクラスタリング
       ▼
 ┌─────────────────────────────────────────┐
 │              evolved/                   │
@@ -88,11 +88,11 @@ Session Activity
 └─────────────────────────────────────────┘
 ```
 
-## Quick Start
+## クイックスタート
 
-### 1. Enable Observation Hooks
+### 1. 観察 Hooks を有効化
 
-Add to your `~/.claude/settings.json`:
+`~/.claude/settings.json` に追加:
 
 ```json
 {
@@ -115,34 +115,34 @@ Add to your `~/.claude/settings.json`:
 }
 ```
 
-### 2. Initialize Directory Structure
+### 2. ディレクトリ構造を初期化
 
 ```bash
 mkdir -p ~/.claude/homunculus/{instincts/{personal,inherited},evolved/{agents,skills,commands}}
 touch ~/.claude/homunculus/observations.jsonl
 ```
 
-### 3. Run the Observer Agent (Optional)
+### 3. Observer エージェントを実行（オプション）
 
-The observer can run in the background analyzing observations:
+Observer はバックグラウンドで観察を分析できます:
 
 ```bash
-# Start background observer
+# バックグラウンド Observer を開始
 ~/.claude/skills/continuous-learning-v2/agents/start-observer.sh
 ```
 
-## Commands
+## コマンド
 
-| Command | Description |
+| コマンド | 説明 |
 |---------|-------------|
-| `/instinct-status` | Show all learned instincts with confidence |
-| `/evolve` | Cluster related instincts into skills/commands |
-| `/instinct-export` | Export instincts for sharing |
-| `/instinct-import <file>` | Import instincts from others |
+| `/instinct-status` | 学習済み本能と信頼度を表示 |
+| `/evolve` | 関連する本能をスキル/コマンドにクラスタリング |
+| `/instinct-export` | 共有用に本能をエクスポート |
+| `/instinct-import <file>` | 他者から本能をインポート |
 
-## Configuration
+## 設定
 
-Edit `config.json`:
+`config.json` を編集:
 
 ```json
 {
@@ -178,80 +178,80 @@ Edit `config.json`:
 }
 ```
 
-## File Structure
+## ファイル構造
 
 ```
 ~/.claude/homunculus/
-├── identity.json           # Your profile, technical level
-├── observations.jsonl      # Current session observations
-├── observations.archive/   # Processed observations
+├── identity.json           # プロファイル、技術レベル
+├── observations.jsonl      # 現在のセッション観察
+├── observations.archive/   # 処理済み観察
 ├── instincts/
-│   ├── personal/           # Auto-learned instincts
-│   └── inherited/          # Imported from others
+│   ├── personal/           # 自動学習された本能
+│   └── inherited/          # 他者からインポート
 └── evolved/
-    ├── agents/             # Generated specialist agents
-    ├── skills/             # Generated skills
-    └── commands/           # Generated commands
+    ├── agents/             # 生成された専門エージェント
+    ├── skills/             # 生成されたスキル
+    └── commands/           # 生成されたコマンド
 ```
 
-## Integration with Skill Creator
+## Skill Creator との連携
 
-When you use the [Skill Creator GitHub App](https://skill-creator.app), it now generates **both**:
-- Traditional SKILL.md files (for backward compatibility)
-- Instinct collections (for v2 learning system)
+[Skill Creator GitHub App](https://skill-creator.app) を使用すると、**両方**が生成されます:
+- 従来の SKILL.md ファイル（後方互換性のため）
+- 本能コレクション（v2 学習システム用）
 
-Instincts from repo analysis have `source: "repo-analysis"` and include the source repository URL.
+リポジトリ分析からの本能は `source: "repo-analysis"` を持ち、ソースリポジトリの URL を含みます。
 
-## Confidence Scoring
+## 信頼度スコアリング
 
-Confidence evolves over time:
+信頼度は時間とともに進化します:
 
-| Score | Meaning | Behavior |
+| スコア | 意味 | 動作 |
 |-------|---------|----------|
-| 0.3 | Tentative | Suggested but not enforced |
-| 0.5 | Moderate | Applied when relevant |
-| 0.7 | Strong | Auto-approved for application |
-| 0.9 | Near-certain | Core behavior |
+| 0.3 | 暫定的 | 提案されるが強制されない |
+| 0.5 | 中程度 | 関連する場合に適用 |
+| 0.7 | 強い | 適用が自動承認 |
+| 0.9 | ほぼ確実 | コア動作 |
 
-**Confidence increases** when:
-- Pattern is repeatedly observed
-- User doesn't correct the suggested behavior
-- Similar instincts from other sources agree
+**信頼度が上がる**場合:
+- パターンが繰り返し観察される
+- ユーザーが提案された動作を修正しない
+- 他のソースからの類似した本能が一致する
 
-**Confidence decreases** when:
-- User explicitly corrects the behavior
-- Pattern isn't observed for extended periods
-- Contradicting evidence appears
+**信頼度が下がる**場合:
+- ユーザーが明示的に動作を修正する
+- パターンが長期間観察されない
+- 矛盾するエビデンスが現れる
 
-## Why Hooks vs Skills for Observation?
+## 観察に Hooks vs Skills を使う理由
 
-> "v1 relied on skills to observe. Skills are probabilistic—they fire ~50-80% of the time based on Claude's judgment."
+> 「v1 は観察にスキルを使用していました。スキルは確率的で、Claude の判断に基づいて約50〜80%の確率で発火します。」
 
-Hooks fire **100% of the time**, deterministically. This means:
-- Every tool call is observed
-- No patterns are missed
-- Learning is comprehensive
+Hooks は**100%の確率**で、決定論的に発火します。これは以下を意味します:
+- すべてのツール呼び出しが観察される
+- パターンを見逃さない
+- 学習が包括的
 
-## Backward Compatibility
+## 後方互換性
 
-v2 is fully compatible with v1:
-- Existing `~/.claude/skills/learned/` skills still work
-- Stop hook still runs (but now also feeds into v2)
-- Gradual migration path: run both in parallel
+v2 は v1 と完全に互換性があります:
+- 既存の `~/.claude/skills/learned/` スキルは引き続き動作
+- Stop hook も引き続き実行（ただし v2 にもフィード）
+- 段階的な移行パス: 両方を並行して実行可能
 
-## Privacy
+## プライバシー
 
-- Observations stay **local** on your machine
-- Only **instincts** (patterns) can be exported
-- No actual code or conversation content is shared
-- You control what gets exported
+- 観察はマシン上に**ローカル**で保存
+- エクスポートできるのは**本能**（パターン）のみ
+- 実際のコードや会話内容は共有されない
+- エクスポート内容はあなたが制御
 
-## Related
+## 関連
 
-- [Skill Creator](https://skill-creator.app) - Generate instincts from repo history
-- [Homunculus](https://github.com/humanplane/homunculus) - Inspiration for v2 architecture
-- [The Longform Guide](https://x.com/affaanmustafa/status/2014040193557471352) - Continuous learning section
+- [Skill Creator](https://skill-creator.app) - リポジトリ履歴から本能を生成
+- [Homunculus](https://github.com/humanplane/homunculus) - v2 アーキテクチャのインスピレーション
+- [The Longform Guide](https://x.com/affaanmustafa/status/2014040193557471352) - 継続学習セクション
 
 ---
 
-*Instinct-based learning: teaching Claude your patterns, one observation at a time.*
+*本能ベース学習: 1つの観察から、Claude にあなたのパターンを教える。*

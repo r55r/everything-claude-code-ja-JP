@@ -4,56 +4,56 @@ description: Analyze local git history to extract coding patterns and generate S
 allowed_tools: ["Bash", "Read", "Write", "Grep", "Glob"]
 ---
 
-# /skill-create - Local Skill Generation
+# /skill-create - ローカルスキル生成
 
-Analyze your repository's git history to extract coding patterns and generate SKILL.md files that teach Claude your team's practices.
+リポジトリのgit履歴を分析し、コーディングパターンを抽出して、チームのプラクティスをClaudeに教えるSKILL.mdファイルを生成します。
 
-## Usage
+## 使用方法
 
 ```bash
-/skill-create                    # Analyze current repo
-/skill-create --commits 100      # Analyze last 100 commits
-/skill-create --output ./skills  # Custom output directory
-/skill-create --instincts        # Also generate instincts for continuous-learning-v2
+/skill-create                    # 現在のリポジトリを分析
+/skill-create --commits 100      # 直近100コミットを分析
+/skill-create --output ./skills  # カスタム出力ディレクトリ
+/skill-create --instincts        # continuous-learning-v2用のインスティンクトも生成
 ```
 
-## What It Does
+## 実行内容
 
-1. **Parses Git History** - Analyzes commits, file changes, and patterns
-2. **Detects Patterns** - Identifies recurring workflows and conventions
-3. **Generates SKILL.md** - Creates valid Claude Code skill files
-4. **Optionally Creates Instincts** - For the continuous-learning-v2 system
+1. **Git履歴を解析** - コミット、ファイル変更、パターンを分析
+2. **パターンを検出** - 繰り返されるワークフローと規約を特定
+3. **SKILL.mdを生成** - 有効なClaude Codeスキルファイルを作成
+4. **オプションでインスティンクトを作成** - continuous-learning-v2システム用
 
-## Analysis Steps
+## 分析ステップ
 
-### Step 1: Gather Git Data
+### ステップ1: Gitデータを収集
 
 ```bash
-# Get recent commits with file changes
+# ファイル変更を含む最近のコミットを取得
 git log --oneline -n ${COMMITS:-200} --name-only --pretty=format:"%H|%s|%ad" --date=short
 
-# Get commit frequency by file
+# ファイル別のコミット頻度を取得
 git log --oneline -n 200 --name-only | grep -v "^$" | grep -v "^[a-f0-9]" | sort | uniq -c | sort -rn | head -20
 
-# Get commit message patterns
+# コミットメッセージのパターンを取得
 git log --oneline -n 200 | cut -d' ' -f2- | head -50
 ```
 
-### Step 2: Detect Patterns
+### ステップ2: パターンを検出
 
-Look for these pattern types:
+以下のパターンタイプを探します：
 
-| Pattern | Detection Method |
+| パターン | 検出方法 |
 |---------|-----------------|
-| **Commit conventions** | Regex on commit messages (feat:, fix:, chore:) |
-| **File co-changes** | Files that always change together |
-| **Workflow sequences** | Repeated file change patterns |
-| **Architecture** | Folder structure and naming conventions |
-| **Testing patterns** | Test file locations, naming, coverage |
+| **コミット規約** | コミットメッセージの正規表現 (feat:, fix:, chore:) |
+| **ファイル同時変更** | 常に一緒に変更されるファイル |
+| **ワークフローシーケンス** | 繰り返されるファイル変更パターン |
+| **アーキテクチャ** | フォルダ構造と命名規約 |
+| **テストパターン** | テストファイルの場所、命名、カバレッジ |
 
-### Step 3: Generate SKILL.md
+### ステップ3: SKILL.mdを生成
 
-Output format:
+出力フォーマット：
 
 ```markdown
 ---
@@ -64,24 +64,24 @@ source: local-git-analysis
 analyzed_commits: {count}
 ---
 
-# {Repo Name} Patterns
+# {リポジトリ名} パターン
 
-## Commit Conventions
-{detected commit message patterns}
+## コミット規約
+{検出されたコミットメッセージパターン}
 
-## Code Architecture
-{detected folder structure and organization}
+## コードアーキテクチャ
+{検出されたフォルダ構造と組織}
 
-## Workflows
-{detected repeating file change patterns}
+## ワークフロー
+{検出された繰り返しファイル変更パターン}
 
-## Testing Patterns
-{detected test conventions}
+## テストパターン
+{検出されたテスト規約}
 ```
 
-### Step 4: Generate Instincts (if --instincts)
+### ステップ4: インスティンクトを生成（--instinctsの場合）
 
-For continuous-learning-v2 integration:
+continuous-learning-v2統合用：
 
 ```yaml
 ---
@@ -92,19 +92,19 @@ domain: git
 source: local-repo-analysis
 ---
 
-# Use Conventional Commits
+# Conventional Commitsを使用
 
-## Action
-Prefix commits with: feat:, fix:, chore:, docs:, test:, refactor:
+## アクション
+コミットにプレフィックスを付ける: feat:, fix:, chore:, docs:, test:, refactor:
 
-## Evidence
-- Analyzed {n} commits
-- {percentage}% follow conventional commit format
+## 根拠
+- {n}件のコミットを分析
+- {percentage}%がConventional Commitフォーマットに従っている
 ```
 
-## Example Output
+## 出力例
 
-Running `/skill-create` on a TypeScript project might produce:
+TypeScriptプロジェクトで `/skill-create` を実行すると以下のようになります：
 
 ```markdown
 ---
@@ -115,60 +115,60 @@ source: local-git-analysis
 analyzed_commits: 150
 ---
 
-# My App Patterns
+# My App パターン
 
-## Commit Conventions
+## コミット規約
 
-This project uses **conventional commits**:
-- `feat:` - New features
-- `fix:` - Bug fixes
-- `chore:` - Maintenance tasks
-- `docs:` - Documentation updates
+このプロジェクトは **Conventional Commits** を使用：
+- `feat:` - 新機能
+- `fix:` - バグ修正
+- `chore:` - メンテナンスタスク
+- `docs:` - ドキュメント更新
 
-## Code Architecture
+## コードアーキテクチャ
 
 ```
 src/
-├── components/     # React components (PascalCase.tsx)
-├── hooks/          # Custom hooks (use*.ts)
-├── utils/          # Utility functions
-├── types/          # TypeScript type definitions
-└── services/       # API and external services
+├── components/     # Reactコンポーネント (PascalCase.tsx)
+├── hooks/          # カスタムフック (use*.ts)
+├── utils/          # ユーティリティ関数
+├── types/          # TypeScript型定義
+└── services/       # APIと外部サービス
 ```
 
-## Workflows
+## ワークフロー
 
-### Adding a New Component
-1. Create `src/components/ComponentName.tsx`
-2. Add tests in `src/components/__tests__/ComponentName.test.tsx`
-3. Export from `src/components/index.ts`
+### 新しいコンポーネントを追加
+1. `src/components/ComponentName.tsx` を作成
+2. `src/components/__tests__/ComponentName.test.tsx` にテストを追加
+3. `src/components/index.ts` からエクスポート
 
-### Database Migration
-1. Modify `src/db/schema.ts`
-2. Run `pnpm db:generate`
-3. Run `pnpm db:migrate`
+### データベースマイグレーション
+1. `src/db/schema.ts` を修正
+2. `pnpm db:generate` を実行
+3. `pnpm db:migrate` を実行
 
-## Testing Patterns
+## テストパターン
 
-- Test files: `__tests__/` directories or `.test.ts` suffix
-- Coverage target: 80%+
-- Framework: Vitest
+- テストファイル: `__tests__/` ディレクトリまたは `.test.ts` サフィックス
+- カバレッジ目標: 80%以上
+- フレームワーク: Vitest
 ```
 
-## GitHub App Integration
+## GitHub App統合
 
-For advanced features (10k+ commits, team sharing, auto-PRs), use the [Skill Creator GitHub App](https://github.com/apps/skill-creator):
+高度な機能（10k以上のコミット、チーム共有、自動PR）には [Skill Creator GitHub App](https://github.com/apps/skill-creator) を使用：
 
-- Install: [github.com/apps/skill-creator](https://github.com/apps/skill-creator)
-- Comment `/skill-creator analyze` on any issue
-- Receives PR with generated skills
+- インストール: [github.com/apps/skill-creator](https://github.com/apps/skill-creator)
+- 任意のissueで `/skill-creator analyze` とコメント
+- 生成されたスキルを含むPRを受け取る
 
-## Related Commands
+## 関連コマンド
 
-- `/instinct-import` - Import generated instincts
-- `/instinct-status` - View learned instincts
-- `/evolve` - Cluster instincts into skills/agents
+- `/instinct-import` - 生成されたインスティンクトをインポート
+- `/instinct-status` - 学習したインスティンクトを表示
+- `/evolve` - インスティンクトをスキル/エージェントにクラスタリング
 
 ---
 
-*Part of [Everything Claude Code](https://github.com/affaan-m/everything-claude-code)*
+*[Everything Claude Code](https://github.com/affaan-m/everything-claude-code)の一部*

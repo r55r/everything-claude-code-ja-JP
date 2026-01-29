@@ -1,59 +1,59 @@
-# Verification Command
+# 検証コマンド
 
-Run comprehensive verification on current codebase state.
+現在のコードベースの状態に対して包括的な検証を実行します。
 
-## Instructions
+## 手順
 
-Execute verification in this exact order:
+以下の順序で正確に検証を実行：
 
-1. **Build Check**
-   - Run the build command for this project
-   - If it fails, report errors and STOP
+1. **ビルドチェック**
+   - このプロジェクトのビルドコマンドを実行
+   - 失敗した場合、エラーを報告して停止
 
-2. **Type Check**
-   - Run TypeScript/type checker
-   - Report all errors with file:line
+2. **型チェック**
+   - TypeScript/型チェッカーを実行
+   - すべてのエラーをファイル名:行番号の形式で報告
 
-3. **Lint Check**
-   - Run linter
-   - Report warnings and errors
+3. **リントチェック**
+   - リンターを実行
+   - 警告とエラーを報告
 
-4. **Test Suite**
-   - Run all tests
-   - Report pass/fail count
-   - Report coverage percentage
+4. **テストスイート**
+   - すべてのテストを実行
+   - 成功/失敗の数を報告
+   - カバレッジパーセンテージを報告
 
-5. **Console.log Audit**
-   - Search for console.log in source files
-   - Report locations
+5. **console.log監査**
+   - ソースファイル内のconsole.logを検索
+   - 場所を報告
 
-6. **Git Status**
-   - Show uncommitted changes
-   - Show files modified since last commit
+6. **Gitステータス**
+   - コミットされていない変更を表示
+   - 最後のコミット以降に変更されたファイルを表示
 
-## Output
+## 出力
 
-Produce a concise verification report:
+簡潔な検証レポートを生成：
 
 ```
 VERIFICATION: [PASS/FAIL]
 
 Build:    [OK/FAIL]
-Types:    [OK/X errors]
-Lint:     [OK/X issues]
-Tests:    [X/Y passed, Z% coverage]
-Secrets:  [OK/X found]
-Logs:     [OK/X console.logs]
+Types:    [OK/Xエラー]
+Lint:     [OK/X問題]
+Tests:    [X/Y成功, Z%カバレッジ]
+Secrets:  [OK/X件検出]
+Logs:     [OK/X件console.log]
 
-Ready for PR: [YES/NO]
+PRの準備完了: [YES/NO]
 ```
 
-If any critical issues, list them with fix suggestions.
+重大な問題がある場合、修正提案とともにリスト化。
 
-## Arguments
+## 引数
 
-$ARGUMENTS can be:
-- `quick` - Only build + types
-- `full` - All checks (default)
-- `pre-commit` - Checks relevant for commits
-- `pre-pr` - Full checks plus security scan
+$ARGUMENTS には以下を指定可能：
+- `quick` - ビルド + 型のみ
+- `full` - すべてのチェック（デフォルト）
+- `pre-commit` - コミットに関連するチェック
+- `pre-pr` - 完全なチェックとセキュリティスキャン

@@ -6,33 +6,33 @@ command: /instinct-export
 
 # Instinct Export Command
 
-Exports instincts to a shareable format. Perfect for:
-- Sharing with teammates
-- Transferring to a new machine
-- Contributing to project conventions
+インスティンクトを共有可能な形式でエクスポートします。以下に最適:
+- チームメイトとの共有
+- 新しいマシンへの転送
+- プロジェクト規約への貢献
 
-## Usage
+## 使用方法
 
 ```
-/instinct-export                           # Export all personal instincts
-/instinct-export --domain testing          # Export only testing instincts
-/instinct-export --min-confidence 0.7      # Only export high-confidence instincts
+/instinct-export                           # すべての個人インスティンクトをエクスポート
+/instinct-export --domain testing          # testingインスティンクトのみをエクスポート
+/instinct-export --min-confidence 0.7      # 高信頼度インスティンクトのみをエクスポート
 /instinct-export --output team-instincts.yaml
 ```
 
-## What to Do
+## 実行内容
 
-1. Read instincts from `~/.claude/homunculus/instincts/personal/`
-2. Filter based on flags
-3. Strip sensitive information:
-   - Remove session IDs
-   - Remove file paths (keep only patterns)
-   - Remove timestamps older than "last week"
-4. Generate export file
+1. `~/.claude/homunculus/instincts/personal/` からインスティンクトを読み込み
+2. フラグに基づいてフィルタリング
+3. 機密情報を削除:
+   - セッションIDを削除
+   - ファイルパスを削除（パターンのみ保持）
+   - 「先週」より古いタイムスタンプを削除
+4. エクスポートファイルを生成
 
-## Output Format
+## 出力フォーマット
 
-Creates a YAML file:
+YAMLファイルを作成:
 
 ```yaml
 # Instincts Export
@@ -67,25 +67,25 @@ instincts:
     observations: 6
 ```
 
-## Privacy Considerations
+## プライバシーへの配慮
 
-Exports include:
-- ✅ Trigger patterns
-- ✅ Actions
-- ✅ Confidence scores
-- ✅ Domains
-- ✅ Observation counts
+エクスポートに含まれるもの:
+- ✅ トリガーパターン
+- ✅ アクション
+- ✅ 信頼度スコア
+- ✅ ドメイン
+- ✅ 観測回数
 
-Exports do NOT include:
-- ❌ Actual code snippets
-- ❌ File paths
-- ❌ Session transcripts
-- ❌ Personal identifiers
+エクスポートに含まれないもの:
+- ❌ 実際のコードスニペット
+- ❌ ファイルパス
+- ❌ セッションのトランスクリプト
+- ❌ 個人識別子
 
-## Flags
+## フラグ
 
-- `--domain <name>`: Export only specified domain
-- `--min-confidence <n>`: Minimum confidence threshold (default: 0.3)
-- `--output <file>`: Output file path (default: instincts-export-YYYYMMDD.yaml)
-- `--format <yaml|json|md>`: Output format (default: yaml)
-- `--include-evidence`: Include evidence text (default: excluded)
+- `--domain <name>`: 指定されたドメインのみをエクスポート
+- `--min-confidence <n>`: 最小信頼度しきい値（デフォルト: 0.3）
+- `--output <file>`: 出力ファイルパス（デフォルト: instincts-export-YYYYMMDD.yaml）
+- `--format <yaml|json|md>`: 出力フォーマット（デフォルト: yaml）
+- `--include-evidence`: 証拠テキストを含める（デフォルト: 除外）
