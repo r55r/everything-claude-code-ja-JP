@@ -1,307 +1,307 @@
-# The Longform Guide to Everything Claude Code
+# Claude Code 完全ロングガイド
 
-![Header: The Longform Guide to Everything Claude Code](./assets/images/longform/01-header.png)
-
----
-
-> **Prerequisite**: This guide builds on [The Shorthand Guide to Everything Claude Code](./the-shortform-guide.md). Read that first if you haven't set up skills, hooks, subagents, MCPs, and plugins.
-
-![Reference to Shorthand Guide](./assets/images/longform/02-shortform-reference.png)
-*The Shorthand Guide - read it first*
-
-In the shorthand guide, I covered the foundational setup: skills and commands, hooks, subagents, MCPs, plugins, and the configuration patterns that form the backbone of an effective Claude Code workflow. That was the setup guide and the base infrastructure.
-
-This longform guide goes into the techniques that separate productive sessions from wasteful ones. If you haven't read the shorthand guide, go back and set up your configs first. What follows assumes you have skills, agents, hooks, and MCPs already configured and working.
-
-The themes here: token economics, memory persistence, verification patterns, parallelization strategies, and the compound effects of building reusable workflows. These are the patterns I've refined over 10+ months of daily use that make the difference between being plagued by context rot within the first hour, versus maintaining productive sessions for hours.
-
-Everything covered in the shorthand and longform guides is available on GitHub: `github.com/affaan-m/everything-claude-code`
+![ヘッダー: Claude Code 完全ロングガイド](./assets/images/longform/01-header.png)
 
 ---
 
-## Tips and Tricks
+> **前提条件**: このガイドは [Claude Code 完全ショートガイド](./the-shortform-guide.md) の内容を基に構成されています。スキル、Hooks、サブエージェント、MCP、プラグインの設定がまだの方は、先にそちらをお読みください。
 
-### Some MCPs are Replaceable and Will Free Up Your Context Window
+![ショートガイドへの参照](./assets/images/longform/02-shortform-reference.png)
+*ショートガイド - まずこちらをお読みください*
 
-For MCPs such as version control (GitHub), databases (Supabase), deployment (Vercel, Railway) etc. - most of these platforms already have robust CLIs that the MCP is essentially just wrapping. The MCP is a nice wrapper but it comes at a cost.
+ショートガイドでは、基礎的なセットアップについて解説しました：スキルとコマンド、Hooks、サブエージェント、MCP、プラグイン、そして効果的な Claude Code ワークフローの基盤となる設定パターンです。あれはセットアップガイドであり、基本インフラでした。
 
-To have the CLI function more like an MCP without actually using the MCP (and the decreased context window that comes with it), consider bundling the functionality into skills and commands. Strip out the tools the MCP exposes that make things easy and turn those into commands.
+このロングガイドでは、生産的なセッションと無駄なセッションを分けるテクニックを深掘りします。ショートガイドをまだ読んでいない方は、まず設定を済ませてください。以下の内容は、スキル、エージェント、Hooks、MCP がすでに設定され動作していることを前提としています。
 
-Example: instead of having the GitHub MCP loaded at all times, create a `/gh-pr` command that wraps `gh pr create` with your preferred options. Instead of the Supabase MCP eating context, create skills that use the Supabase CLI directly.
+ここでのテーマ：トークンエコノミクス、メモリの永続化、検証パターン、並列化戦略、そして再利用可能なワークフロー構築の複合効果。これらは 10 ヶ月以上の日常使用で磨き上げたパターンであり、最初の 1 時間でコンテキストが劣化するか、何時間も生産的なセッションを維持できるかの違いを生み出します。
 
-With lazy loading, the context window issue is mostly solved. But token usage and cost is not solved in the same way. The CLI + skills approach is still a token optimization method.
+ショートガイドとロングガイドで取り上げた内容はすべて GitHub で公開されています：`github.com/affaan-m/everything-claude-code`
 
 ---
 
-## IMPORTANT STUFF
+## ヒントとコツ
 
-### Context and Memory Management
+### 一部の MCP は置き換え可能で、コンテキストウィンドウを節約できる
 
-For sharing memory across sessions, a skill or command that summarizes and checks in on progress then saves to a `.tmp` file in your `.claude` folder and appends to it until the end of your session is the best bet. The next day it can use that as context and pick up where you left off, create a new file for each session so you don't pollute old context into new work.
+バージョン管理（GitHub）、データベース（Supabase）、デプロイ（Vercel、Railway）などの MCP について - これらのプラットフォームのほとんどは、MCP が本質的にラップしているだけの堅牢な CLI をすでに持っています。MCP は便利なラッパーですが、コストがかかります。
 
-![Session Storage File Tree](./assets/images/longform/03-session-storage.png)
-*Example of session storage -> https://github.com/affaan-m/everything-claude-code/tree/main/examples/sessions*
+MCP を実際に使用せずに（それに伴うコンテキストウィンドウの減少なしに）CLI を MCP のように機能させるには、機能をスキルとコマンドにバンドルすることを検討してください。MCP が公開している便利なツールを取り出して、それらをコマンドに変換します。
 
-Claude creates a file summarizing current state. Review it, ask for edits if needed, then start fresh. For the new conversation, just provide the file path. Particularly useful when you're hitting context limits and need to continue complex work. These files should contain:
-- What approaches worked (verifiably with evidence)
-- Which approaches were attempted but did not work
-- Which approaches have not been attempted and what's left to do
+例：GitHub MCP を常時ロードする代わりに、好みのオプションで `gh pr create` をラップする `/gh-pr` コマンドを作成します。Supabase MCP がコンテキストを消費する代わりに、Supabase CLI を直接使用するスキルを作成します。
 
-**Clearing Context Strategically:**
+遅延ロードにより、コンテキストウィンドウの問題はほぼ解決されています。しかし、トークン使用量とコストは同じようには解決されていません。CLI + スキルのアプローチは依然としてトークン最適化の手法です。
 
-Once you have your plan set and context cleared (default option in plan mode in Claude Code now), you can work from the plan. This is useful when you've accumulated a lot of exploration context that's no longer relevant to execution. For strategic compacting, disable auto compact. Manually compact at logical intervals or create a skill that does so for you.
+---
 
-**Advanced: Dynamic System Prompt Injection**
+## 重要事項
 
-One pattern I picked up: instead of solely putting everything in CLAUDE.md (user scope) or `.claude/rules/` (project scope) which loads every session, use CLI flags to inject context dynamically.
+### コンテキストとメモリ管理
+
+セッション間でメモリを共有するには、進捗を要約してチェックインし、`.claude` フォルダ内の `.tmp` ファイルに保存し、セッション終了までそれに追記するスキルまたはコマンドが最良の方法です。翌日、それをコンテキストとして使用し、中断したところから再開できます。新しいセッションごとに新しいファイルを作成して、古いコンテキストが新しい作業を汚染しないようにします。
+
+![セッションストレージファイルツリー](./assets/images/longform/03-session-storage.png)
+*セッションストレージの例 -> https://github.com/affaan-m/everything-claude-code/tree/main/examples/sessions*
+
+Claude が現在の状態を要約したファイルを作成します。それをレビューし、必要に応じて編集を依頼し、新しいセッションを開始します。新しい会話では、ファイルパスを提供するだけです。コンテキストの上限に達し、複雑な作業を続ける必要がある場合に特に有用です。これらのファイルには以下を含めるべきです：
+- どのアプローチが機能したか（証拠付きで検証済み）
+- どのアプローチを試みたが機能しなかったか
+- どのアプローチがまだ試されておらず、何が残っているか
+
+**戦略的なコンテキストのクリア：**
+
+計画を設定しコンテキストをクリアしたら（Claude Code のプランモードでデフォルトオプション）、その計画に基づいて作業できます。これは、実行にはもう関係のない多くの探索コンテキストが蓄積された場合に有用です。戦略的なコンパクト化には、自動コンパクトを無効にします。論理的な間隔で手動でコンパクト化するか、それを行うスキルを作成します。
+
+**上級：動的システムプロンプトインジェクション**
+
+私が習得したパターン：すべてを CLAUDE.md（ユーザースコープ）や `.claude/rules/`（プロジェクトスコープ）だけに置くのではなく（毎セッションでロードされる）、CLI フラグを使用してコンテキストを動的に注入します。
 
 ```bash
 claude --system-prompt "$(cat memory.md)"
 ```
 
-This lets you be more surgical about what context loads when. System prompt content has higher authority than user messages, which have higher authority than tool results.
+これにより、いつどのコンテキストをロードするかをより外科的にコントロールできます。システムプロンプトの内容はユーザーメッセージより高い権限を持ち、ユーザーメッセージはツール結果より高い権限を持ちます。
 
-**Practical setup:**
+**実用的なセットアップ：**
 
 ```bash
-# Daily development
+# 日常の開発
 alias claude-dev='claude --system-prompt "$(cat ~/.claude/contexts/dev.md)"'
 
-# PR review mode
+# PR レビューモード
 alias claude-review='claude --system-prompt "$(cat ~/.claude/contexts/review.md)"'
 
-# Research/exploration mode
+# リサーチ/探索モード
 alias claude-research='claude --system-prompt "$(cat ~/.claude/contexts/research.md)"'
 ```
 
-**Advanced: Memory Persistence Hooks**
+**上級：メモリ永続化 Hooks**
 
-There are hooks most people don't know about that help with memory:
+メモリに役立つ、ほとんどの人が知らない Hooks があります：
 
-- **PreCompact Hook**: Before context compaction happens, save important state to a file
-- **Stop Hook (Session End)**: On session end, persist learnings to a file
-- **SessionStart Hook**: On new session, load previous context automatically
+- **PreCompact Hook**：コンテキストのコンパクト化前に、重要な状態をファイルに保存
+- **Stop Hook（セッション終了）**：セッション終了時に、学習内容をファイルに永続化
+- **SessionStart Hook**：新しいセッション時に、前回のコンテキストを自動的にロード
 
-I've built these hooks and they're in the repo at `github.com/affaan-m/everything-claude-code/tree/main/hooks/memory-persistence`
-
----
-
-### Continuous Learning / Memory
-
-If you've had to repeat a prompt multiple times and Claude ran into the same problem or gave you a response you've heard before - those patterns must be appended to skills.
-
-**The Problem:** Wasted tokens, wasted context, wasted time.
-
-**The Solution:** When Claude Code discovers something that isn't trivial - a debugging technique, a workaround, some project-specific pattern - it saves that knowledge as a new skill. Next time a similar problem comes up, the skill gets loaded automatically.
-
-I've built a continuous learning skill that does this: `github.com/affaan-m/everything-claude-code/tree/main/skills/continuous-learning`
-
-**Why Stop Hook (Not UserPromptSubmit):**
-
-The key design decision is using a **Stop hook** instead of UserPromptSubmit. UserPromptSubmit runs on every single message - adds latency to every prompt. Stop runs once at session end - lightweight, doesn't slow you down during the session.
+これらの Hooks を構築しており、リポジトリの `github.com/affaan-m/everything-claude-code/tree/main/hooks/memory-persistence` にあります
 
 ---
 
-### Token Optimization
+### 継続的学習 / メモリ
 
-**Primary Strategy: Subagent Architecture**
+プロンプトを何度も繰り返し、Claude が同じ問題に遭遇したり、以前聞いたことのある回答をした場合 - それらのパターンはスキルに追加する必要があります。
 
-Optimize the tools you use and subagent architecture designed to delegate the cheapest possible model that is sufficient for the task.
+**問題：** トークンの無駄、コンテキストの無駄、時間の無駄。
 
-**Model Selection Quick Reference:**
+**解決策：** Claude Code が自明でない何かを発見したとき - デバッグテクニック、回避策、プロジェクト固有のパターン - その知識を新しいスキルとして保存します。次に同様の問題が発生したとき、スキルが自動的にロードされます。
 
-![Model Selection Table](./assets/images/longform/04-model-selection.png)
-*Hypothetical setup of subagents on various common tasks and reasoning behind the choices*
+これを行う継続的学習スキルを構築しました：`github.com/affaan-m/everything-claude-code/tree/main/skills/continuous-learning`
 
-| Task Type                 | Model  | Why                                        |
-| ------------------------- | ------ | ------------------------------------------ |
-| Exploration/search        | Haiku  | Fast, cheap, good enough for finding files |
-| Simple edits              | Haiku  | Single-file changes, clear instructions    |
-| Multi-file implementation | Sonnet | Best balance for coding                    |
-| Complex architecture      | Opus   | Deep reasoning needed                      |
-| PR reviews                | Sonnet | Understands context, catches nuance        |
-| Security analysis         | Opus   | Can't afford to miss vulnerabilities       |
-| Writing docs              | Haiku  | Structure is simple                        |
-| Debugging complex bugs    | Opus   | Needs to hold entire system in mind        |
+**Stop Hook を使う理由（UserPromptSubmit ではなく）：**
 
-Default to Sonnet for 90% of coding tasks. Upgrade to Opus when first attempt failed, task spans 5+ files, architectural decisions, or security-critical code.
-
-**Pricing Reference:**
-
-![Claude Model Pricing](./assets/images/longform/05-pricing-table.png)
-*Source: https://platform.claude.com/docs/en/about-claude/pricing*
-
-**Tool-Specific Optimizations:**
-
-Replace grep with mgrep - ~50% token reduction on average compared to traditional grep or ripgrep:
-
-![mgrep Benchmark](./assets/images/longform/06-mgrep-benchmark.png)
-*In our 50-task benchmark, mgrep + Claude Code used ~2x fewer tokens than grep-based workflows at similar or better judged quality. Source: https://github.com/mixedbread-ai/mgrep*
-
-**Modular Codebase Benefits:**
-
-Having a more modular codebase with main files being in the hundreds of lines instead of thousands of lines helps both in token optimization costs and getting a task done right on the first try.
+重要な設計判断は、UserPromptSubmit ではなく **Stop hook** を使用することです。UserPromptSubmit はすべてのメッセージで実行され、すべてのプロンプトにレイテンシを追加します。Stop はセッション終了時に一度だけ実行され、軽量で、セッション中の速度低下がありません。
 
 ---
 
-### Verification Loops and Evals
+### トークン最適化
 
-**Benchmarking Workflow:**
+**主要戦略：サブエージェントアーキテクチャ**
 
-Compare asking for the same thing with and without a skill and checking the output difference:
+使用するツールと、タスクに十分な最も安価なモデルに委任するよう設計されたサブエージェントアーキテクチャを最適化します。
 
-Fork the conversation, initiate a new worktree in one of them without the skill, pull up a diff at the end, see what was logged.
+**モデル選択クイックリファレンス：**
 
-**Eval Pattern Types:**
+![モデル選択表](./assets/images/longform/04-model-selection.png)
+*一般的なタスクに対するサブエージェントの仮想的なセットアップと選択の理由*
 
-- **Checkpoint-Based Evals**: Set explicit checkpoints, verify against defined criteria, fix before proceeding
-- **Continuous Evals**: Run every N minutes or after major changes, full test suite + lint
+| タスクタイプ | モデル | 理由 |
+| --- | --- | --- |
+| 探索/検索 | Haiku | 高速、安価、ファイル検索には十分 |
+| シンプルな編集 | Haiku | 単一ファイルの変更、明確な指示 |
+| 複数ファイルの実装 | Sonnet | コーディングに最適なバランス |
+| 複雑なアーキテクチャ | Opus | 深い推論が必要 |
+| PR レビュー | Sonnet | コンテキストを理解し、ニュアンスをキャッチ |
+| セキュリティ分析 | Opus | 脆弱性を見逃すわけにいかない |
+| ドキュメント作成 | Haiku | 構造がシンプル |
+| 複雑なバグのデバッグ | Opus | システム全体を把握する必要がある |
 
-**Key Metrics:**
+コーディングタスクの 90% は Sonnet をデフォルトに。最初の試行が失敗した場合、タスクが 5 つ以上のファイルにまたがる場合、アーキテクチャの決定、またはセキュリティクリティカルなコードの場合は Opus にアップグレード。
+
+**料金リファレンス：**
+
+![Claude モデル料金](./assets/images/longform/05-pricing-table.png)
+*出典: https://platform.claude.com/docs/en/about-claude/pricing*
+
+**ツール固有の最適化：**
+
+grep を mgrep に置き換え - 従来の grep や ripgrep と比較して平均約 50% のトークン削減：
+
+![mgrep ベンチマーク](./assets/images/longform/06-mgrep-benchmark.png)
+*50 タスクのベンチマークで、mgrep + Claude Code は grep ベースのワークフローと同等以上の品質で約 2 倍少ないトークンを使用しました。出典: https://github.com/mixedbread-ai/mgrep*
+
+**モジュラーコードベースの利点：**
+
+メインファイルが数千行ではなく数百行のモジュラーなコードベースを持つことは、トークン最適化コストと最初の試行でタスクを正しく完了することの両方に役立ちます。
+
+---
+
+### 検証ループと評価
+
+**ベンチマークワークフロー：**
+
+スキルありとなしで同じことを要求し、出力の違いをチェックして比較：
+
+会話をフォークし、一方でスキルなしの新しい worktree を開始し、最後に diff を表示し、ログを確認します。
+
+**評価パターンの種類：**
+
+- **チェックポイントベースの評価**：明示的なチェックポイントを設定し、定義された基準に対して検証し、続行前に修正
+- **継続的評価**：N 分ごとまたは大きな変更後に実行、完全なテストスイート + lint
+
+**主要メトリクス：**
 
 ```
-pass@k: At least ONE of k attempts succeeds
+pass@k: k 回の試行のうち少なくとも 1 回が成功
         k=1: 70%  k=3: 91%  k=5: 97%
 
-pass^k: ALL k attempts must succeed
+pass^k: k 回の試行すべてが成功する必要がある
         k=1: 70%  k=3: 34%  k=5: 17%
 ```
 
-Use **pass@k** when you just need it to work. Use **pass^k** when consistency is essential.
+動作すればよい場合は **pass@k** を使用。一貫性が重要な場合は **pass^k** を使用。
 
 ---
 
-## PARALLELIZATION
+## 並列化
 
-When forking conversations in a multi-Claude terminal setup, make sure the scope is well-defined for the actions in the fork and the original conversation. Aim for minimal overlap when it comes to code changes.
+マルチ Claude ターミナルセットアップで会話をフォークする場合、フォークと元の会話のアクションのスコープが明確に定義されていることを確認してください。コード変更に関しては重複を最小限に抑えることを目指します。
 
-**My Preferred Pattern:**
+**私の好むパターン：**
 
-Main chat for code changes, forks for questions about the codebase and its current state, or research on external services.
+コード変更にはメインチャット、コードベースとその現在の状態に関する質問や外部サービスの調査にはフォーク。
 
-**On Arbitrary Terminal Counts:**
+**任意のターミナル数について：**
 
-![Boris on Parallel Terminals](./assets/images/longform/07-boris-parallel.png)
-*Boris (Anthropic) on running multiple Claude instances*
+![Boris の並列ターミナルについて](./assets/images/longform/07-boris-parallel.png)
+*Boris（Anthropic）の複数 Claude インスタンス実行について*
 
-Boris has tips on parallelization. He's suggested things like running 5 Claude instances locally and 5 upstream. I advise against setting arbitrary terminal amounts. The addition of a terminal should be out of true necessity.
+Boris は並列化に関するヒントを持っています。彼はローカルで 5 つの Claude インスタンスとアップストリームで 5 つを実行するようなことを提案しています。私は任意のターミナル数を設定することに反対します。ターミナルの追加は真の必要性から生じるべきです。
 
-Your goal should be: **how much can you get done with the minimum viable amount of parallelization.**
+あなたの目標は：**最小限の並列化で最大限の成果を出すこと**です。
 
-**Git Worktrees for Parallel Instances:**
+**並列インスタンス用の Git Worktrees：**
 
 ```bash
-# Create worktrees for parallel work
+# 並列作業用の worktree を作成
 git worktree add ../project-feature-a feature-a
 git worktree add ../project-feature-b feature-b
 git worktree add ../project-refactor refactor-branch
 
-# Each worktree gets its own Claude instance
+# 各 worktree には独自の Claude インスタンス
 cd ../project-feature-a && claude
 ```
 
-IF you are to begin scaling your instances AND you have multiple instances of Claude working on code that overlaps with one another, it's imperative you use git worktrees and have a very well-defined plan for each. Use `/rename <name here>` to name all your chats.
+インスタンスのスケーリングを開始し、かつ互いに重複するコードで複数の Claude インスタンスが作業している場合、git worktree を使用し、各々に非常に明確な計画を立てることが不可欠です。`/rename <名前>` を使用してすべてのチャットに名前を付けます。
 
-![Two Terminal Setup](./assets/images/longform/08-two-terminals.png)
-*Starting Setup: Left Terminal for Coding, Right Terminal for Questions - use /rename and /fork*
+![2 ターミナルセットアップ](./assets/images/longform/08-two-terminals.png)
+*開始セットアップ：左ターミナルでコーディング、右ターミナルで質問 - /rename と /fork を使用*
 
-**The Cascade Method:**
+**カスケードメソッド：**
 
-When running multiple Claude Code instances, organize with a "cascade" pattern:
+複数の Claude Code インスタンスを実行する場合、「カスケード」パターンで整理：
 
-- Open new tasks in new tabs to the right
-- Sweep left to right, oldest to newest
-- Focus on at most 3-4 tasks at a time
-
----
-
-## GROUNDWORK
-
-**The Two-Instance Kickoff Pattern:**
-
-For my own workflow management, I like to start an empty repo with 2 open Claude instances.
-
-**Instance 1: Scaffolding Agent**
-- Lays down the scaffold and groundwork
-- Creates project structure
-- Sets up configs (CLAUDE.md, rules, agents)
-
-**Instance 2: Deep Research Agent**
-- Connects to all your services, web search
-- Creates the detailed PRD
-- Creates architecture mermaid diagrams
-- Compiles the references with actual documentation clips
-
-**llms.txt Pattern:**
-
-If available, you can find an `llms.txt` on many documentation references by doing `/llms.txt` on them once you reach their docs page. This gives you a clean, LLM-optimized version of the documentation.
-
-**Philosophy: Build Reusable Patterns**
-
-From @omarsar0: "Early on, I spent time building reusable workflows/patterns. Tedious to build, but this had a wild compounding effect as models and agent harnesses improved."
-
-**What to invest in:**
-
-- Subagents
-- Skills
-- Commands
-- Planning patterns
-- MCP tools
-- Context engineering patterns
+- 新しいタスクは右側の新しいタブで開く
+- 左から右へ、古いものから新しいものへスイープ
+- 同時に最大 3-4 タスクに集中
 
 ---
 
-## Best Practices for Agents & Sub-Agents
+## 準備作業
 
-**The Sub-Agent Context Problem:**
+**2 インスタンスキックオフパターン：**
 
-Sub-agents exist to save context by returning summaries instead of dumping everything. But the orchestrator has semantic context the sub-agent lacks. The sub-agent only knows the literal query, not the PURPOSE behind the request.
+私自身のワークフロー管理では、空のリポジトリを 2 つの Claude インスタンスを開いて開始するのが好きです。
 
-**Iterative Retrieval Pattern:**
+**インスタンス 1：スキャフォールディングエージェント**
+- スキャフォールドと基盤を構築
+- プロジェクト構造を作成
+- 設定をセットアップ（CLAUDE.md、ルール、エージェント）
 
-1. Orchestrator evaluates every sub-agent return
-2. Ask follow-up questions before accepting it
-3. Sub-agent goes back to source, gets answers, returns
-4. Loop until sufficient (max 3 cycles)
+**インスタンス 2：ディープリサーチエージェント**
+- すべてのサービス、ウェブ検索に接続
+- 詳細な PRD を作成
+- アーキテクチャの Mermaid 図を作成
+- 実際のドキュメントクリップ付きのリファレンスをコンパイル
 
-**Key:** Pass objective context, not just the query.
+**llms.txt パターン：**
 
-**Orchestrator with Sequential Phases:**
+利用可能な場合、多くのドキュメントリファレンスでドキュメントページに到達したら `/llms.txt` を行うことで `llms.txt` を見つけることができます。これにより、LLM 最適化されたクリーンなバージョンのドキュメントが得られます。
+
+**哲学：再利用可能なパターンを構築**
+
+@omarsar0 より：「初期段階で、再利用可能なワークフロー/パターンの構築に時間を費やしました。構築は面倒でしたが、モデルとエージェントハーネスが改善されるにつれて、これは驚くべき複合効果をもたらしました。」
+
+**投資すべきもの：**
+
+- サブエージェント
+- スキル
+- コマンド
+- 計画パターン
+- MCP ツール
+- コンテキストエンジニアリングパターン
+
+---
+
+## エージェントとサブエージェントのベストプラクティス
+
+**サブエージェントのコンテキスト問題：**
+
+サブエージェントは、すべてをダンプするのではなく要約を返すことでコンテキストを節約するために存在します。しかし、オーケストレーターにはサブエージェントにはない意味的コンテキストがあります。サブエージェントは文字通りのクエリしか知らず、リクエストの背後にある目的を知りません。
+
+**反復的取得パターン：**
+
+1. オーケストレーターがすべてのサブエージェントの戻り値を評価
+2. 受け入れる前にフォローアップの質問をする
+3. サブエージェントがソースに戻り、回答を取得して返す
+4. 十分になるまでループ（最大 3 サイクル）
+
+**鍵：** クエリだけでなく、目的のコンテキストを渡す。
+
+**シーケンシャルフェーズのオーケストレーター：**
 
 ```markdown
-Phase 1: RESEARCH (use Explore agent) → research-summary.md
-Phase 2: PLAN (use planner agent) → plan.md
-Phase 3: IMPLEMENT (use tdd-guide agent) → code changes
-Phase 4: REVIEW (use code-reviewer agent) → review-comments.md
-Phase 5: VERIFY (use build-error-resolver if needed) → done or loop back
+フェーズ 1: RESEARCH（Explore エージェントを使用）→ research-summary.md
+フェーズ 2: PLAN（planner エージェントを使用）→ plan.md
+フェーズ 3: IMPLEMENT（tdd-guide エージェントを使用）→ コード変更
+フェーズ 4: REVIEW（code-reviewer エージェントを使用）→ review-comments.md
+フェーズ 5: VERIFY（必要に応じて build-error-resolver を使用）→ 完了またはループバック
 ```
 
-**Key rules:**
+**重要なルール：**
 
-1. Each agent gets ONE clear input and produces ONE clear output
-2. Outputs become inputs for next phase
-3. Never skip phases
-4. Use `/clear` between agents
-5. Store intermediate outputs in files
+1. 各エージェントには 1 つの明確な入力があり、1 つの明確な出力を生成
+2. 出力が次のフェーズの入力になる
+3. フェーズをスキップしない
+4. エージェント間で `/clear` を使用
+5. 中間出力をファイルに保存
 
 ---
 
-## FUN STUFF / NOT CRITICAL JUST FUN TIPS
+## 楽しいこと / 重要ではないが楽しいヒント
 
-### Custom Status Line
+### カスタムステータスライン
 
-You can set it using `/statusline` - then Claude will say you don't have one but can set it up for you and ask what you want in it.
+`/statusline` を使って設定できます - Claude はまだ設定がないと言いますが、設定を手伝い、何を入れたいか尋ねてくれます。
 
-See also: https://github.com/sirmalloc/ccstatusline
+参照：https://github.com/sirmalloc/ccstatusline
 
-### Voice Transcription
+### 音声文字起こし
 
-Talk to Claude Code with your voice. Faster than typing for many people.
+音声で Claude Code に話しかけましょう。多くの人にとってタイピングより高速です。
 
-- superwhisper, MacWhisper on Mac
-- Even with transcription mistakes, Claude understands intent
+- Mac では superwhisper、MacWhisper
+- 文字起こしのミスがあっても、Claude は意図を理解します
 
-### Terminal Aliases
+### ターミナルエイリアス
 
 ```bash
 alias c='claude'
@@ -312,43 +312,43 @@ alias q='cd ~/Desktop/projects'
 
 ---
 
-## Milestone
+## マイルストーン
 
-![25k+ GitHub Stars](./assets/images/longform/09-25k-stars.png)
-*25,000+ GitHub stars in under a week*
+![25,000 以上の GitHub スター](./assets/images/longform/09-25k-stars.png)
+*1 週間足らずで 25,000 以上の GitHub スター*
 
 ---
 
-## Resources
+## リソース
 
-**Agent Orchestration:**
+**エージェントオーケストレーション：**
 
-- https://github.com/ruvnet/claude-flow - Enterprise orchestration platform with 54+ specialized agents
+- https://github.com/ruvnet/claude-flow - 54 以上の専門エージェントを持つエンタープライズオーケストレーションプラットフォーム
 
-**Self-Improving Memory:**
+**自己改善メモリ：**
 
 - https://github.com/affaan-m/everything-claude-code/tree/main/skills/continuous-learning
-- rlancemartin.github.io/2025/12/01/claude_diary/ - Session reflection pattern
+- rlancemartin.github.io/2025/12/01/claude_diary/ - セッション振り返りパターン
 
-**System Prompts Reference:**
+**システムプロンプトリファレンス：**
 
-- https://github.com/x1xhlol/system-prompts-and-models-of-ai-tools - Collection of system prompts (110k stars)
+- https://github.com/x1xhlol/system-prompts-and-models-of-ai-tools - システムプロンプトのコレクション（110k スター）
 
-**Official:**
+**公式：**
 
 - Anthropic Academy: anthropic.skilljar.com
 
 ---
 
-## References
+## 参考文献
 
-- [Anthropic: Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
-- [YK: 32 Claude Code Tips](https://agenticcoding.substack.com/p/32-claude-code-tips-from-basics-to)
-- [RLanceMartin: Session Reflection Pattern](https://rlancemartin.github.io/2025/12/01/claude_diary/)
-- @PerceptualPeak: Sub-Agent Context Negotiation
-- @menhguin: Agent Abstractions Tierlist
-- @omarsar0: Compound Effects Philosophy
+- [Anthropic: AI エージェントの評価を解明する](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+- [YK: 32 の Claude Code ヒント](https://agenticcoding.substack.com/p/32-claude-code-tips-from-basics-to)
+- [RLanceMartin: セッション振り返りパターン](https://rlancemartin.github.io/2025/12/01/claude_diary/)
+- @PerceptualPeak: サブエージェントコンテキストネゴシエーション
+- @menhguin: エージェント抽象化ティアリスト
+- @omarsar0: 複合効果の哲学
 
 ---
 
-*Everything covered in both guides is available on GitHub at [everything-claude-code](https://github.com/affaan-m/everything-claude-code)*
+*両ガイドで取り上げた内容はすべて GitHub の [everything-claude-code](https://github.com/affaan-m/everything-claude-code) で公開されています*
